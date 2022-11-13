@@ -12,4 +12,4 @@ local_settings.py
 
 #database migrations
 */migrations/*.py
-!*/migrations/__init__.py
+*/migrations/__init__.py
