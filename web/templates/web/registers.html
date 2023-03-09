@@ -1,0 +1,141 @@
+{% extends 'layout/basic.html' %}
+{% load static %}
+{% block title %} 用户注册 {% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/account.css' %}">
+    <style>
+       .error-msg{
+           color: red;
+           position: absolute;
+           font-size: 13px;
+       }
+
+        .col-md-6 {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+
+        .v_code{
+            width: 124px;
+        }
+
+        #btnSms{
+            width: 156px;
+            display: inline-block;
+            float: right;
+
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+    <h1>注册</h1>
+    <form id="regFrom" method="POST" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        {% if field.name == 'verification_code' %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}}"> {{field.label }} </label>
+            <div class="clearfix">
+                <div class="col-md-6" style="display: inline-block;float: left;">{{ field }}<span class="error-msg"></span></div>
+                <div  class="col-md-6 v_code" style="display: inline-block;float: right"><input id="btnSms" type="button" class="btn btn-default" value="点击获取验证码"></div>
+            </div>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}}"> {{field.label }} </label>
+            {{ field }}
+            <span class="error-msg"></span>
+        </div>
+        {% endif %}
+        {% endfor %}
+        <button id="btnSubmit" class="btn btn-default" type="button" >注册</button>
+   </form>
+    </div>
+
+
+
+{% endblock %}
+
+{% block js %}
+    <script>
+    //限制验证码input框必须输入数字及4位长度
+    var v_code = document.getElementsByName('verification_code')[0]
+    v_code.setAttribute("maxlength","4")
+    v_code.oninput = function(){
+     this.value = this.value.replace(/\D/g, '');
+   }
+
+    //页面加载完成之后自动执行
+    $(function (){
+        bindClickBtnSms()
+        bindClickSubmit()
+    })
+
+    function bindClickSubmit(){
+        $('#btnSubmit').click(function (){
+            $('.error-msg').empty();
+            //发送ajax
+            $.ajax({
+                url: "{% url 'web:register' %}",
+                type: "POST",
+                data: $('#regFrom').serialize(), //包含from中所有input中的数据,
+                dataType: "JSON",
+                success:function (res) {
+                    if (res.status) {
+                        location.href=res.data
+                    }else{
+                        $.each(res.error,function (key,value){
+                        $("#id_"+key).next().text(value[0])
+                    })
+                    }
+                }
+
+            })
+        })
+    }
+
+    //ajax发送验证码
+    function bindClickBtnSms(){
+        $('#btnSms').click(function (){
+         $('.error-msg').empty();
+         //获取用户输入的手机号
+         var mobilePhone = $('#id_mobile_phone').val()
+
+        //发送ajax请求到后台
+        $.ajax({
+            url: "{% url 'web:send_sms' %}",
+            type: "GET",
+            data: {mobile_phone: mobilePhone,tpl:"register"},
+            dataType: "JSON",
+            success:function (res) {
+                //ajax请求发送成功之后，自动执行
+                if (res.status){
+                    sendSmsRemind()
+                }else{
+                    $.each(res.error,function (key,value){
+                        $("#id_"+key).next().text(value[0])
+                    })
+                }
+            }
+        })
+
+        })
+        function  sendSmsRemind() {
+            var $smsBtn = $('#btnSms');
+            $smsBtn.prop('disabled',true);
+            var time = 60;
+            var remind = setInterval(function (){
+                time = time - 1;
+                $smsBtn.val(time+"秒重新发送");
+                if (time<1){
+                    clearInterval(remind);
+                    $smsBtn.val('点击重新获取验证码').prop('disabled',false);
+                }
+            },1000)
+        }
+    }
+    </script>
+{% endblock %}

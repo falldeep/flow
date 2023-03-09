@@ -1,0 +1,19 @@
+          <ul class="dropdown-menu">
+         {% if not my and not join %}
+             <li style="margin:10px;font-size: 13px">您还没有创建项目</li>
+         {% elif my %}
+          <li style="font-weight: 500;user-select: none;"><i class="fa fa-rocket project-icon" aria-hidden="true"></i>我创建的项目</li>
+          <li role="separator" class="divider" style="margin: 0"></li>
+              {% for item in my %}
+            <li><a href="{% url 'web:dashboard' project_id=item.id %}">{{ item.name }}</a></li>
+              {% endfor %}
+          {% endif %}
+            {% if join %}
+            <li style="font-weight: 500;user-select: none;"><i class="fa fa-flag project-icon" style="margin-right: 10px" aria-hidden="true"></i>我参与的项目</li>
+            <li role="separator" class="divider" style="margin: 0"></li>
+               {% for item in join %}
+            <li><a href="{% url 'web:dashboard' project_id=item.project.id %}">{{ item.project.name }}</a></li>
+              {% endfor %}
+             {% endif %}
+
+          </ul>

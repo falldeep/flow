@@ -1,0 +1,73 @@
+{% extends 'layout/basic.html' %}
+{% load static %}
+{% block title %} 登陆 {% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/account.css' %}">
+    <style>
+       .error-msg{
+           color: red;
+           position: absolute;
+           font-size: 13px;
+       }
+
+        .col-md-6 {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+
+        .v_code{
+            width: 124px;
+        }
+
+        #reCode {
+            cursor: pointer;
+            text-decoration: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+    <h1>登陆</h1>
+    <form  method="POST" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+        {% if field.name == 'verification_code' %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}}"> {{field.label }} </label>
+            <div class="clearfix">
+                <div class="col-md-6" style="display: inline-block;float: left;">{{ field }}<span class="error-msg">{{ field.errors.0 }}</span></div>
+                <div  class="col-md-6 v_code" style="display: inline-block;float: right"><img src="{% url 'web:img_code'  %}" id="imgCode" title="看不清，换一张"><a id="reCode">看不清，换一张</a></div>
+            </div>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}}"> {{field.label }} </label>
+            {{ field }}
+            <span class="error-msg">{{ field.errors.0 }}</span>
+        </div>
+        {% endif %}
+        {% endfor %}
+        <div style="float: right">
+            <a href="{% url "web:login_sms" %}">短信登陆</a>
+        </div>
+        <button  class="btn btn-default" type="submit" >登陆</button>
+   </form>
+    </div>
+
+
+
+{% endblock %}
+
+{% block js %}
+    <script>
+    $(function (){
+        $('#reCode').click(function (){
+            var oldSrc = $('#imgCode').attr('src');
+            $('#imgCode').attr('src',oldSrc + "?");
+        })
+    })
+    </script>
+{% endblock %}
+

@@ -1,0 +1,494 @@
+{% extends "layout/manage.html" %}
+{% load static %}
+
+{% block css %}
+    <style>
+       .panel-default .panel-heading{
+           display: flex;
+           flex-direction: row;
+           justify-content: space-between;
+       }
+
+       .panel-heading{
+           padding: 5px 5px;
+
+       }
+       #font-sze{
+           line-height: 40px;
+           font-size: 14px;
+       }
+
+
+
+       .fa{
+           margin-right: 3px;
+       }
+
+       a:hover{
+           text-decoration: none;
+           cursor:pointer;
+       }
+
+       th {
+           font-size: 15px;
+       }
+
+       .panel-default > .panel-heading .function .upload {
+            overflow: hidden;
+        }
+
+       .panel-default > .panel-heading .function .upload input {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -2px;
+            overflow: hidden;
+        }
+
+       .upload-progress {
+            position: fixed;
+            right: 2px;
+            bottom: 2px;
+            width: 400px;
+        }
+
+       .upload-progress .progress-error {
+            color: red;
+        }
+
+       #rowList td{
+           font-size: 17px;
+       }
+
+       #rowList td{
+           font-size: 16px;
+       }
+
+       .panel-default>.panel-heading{
+           background-color: #fff;
+           margin-bottom: 3px;
+           font-size: 14px;
+       }
+
+       .separator{
+           margin-left: 10px;
+           margin-right: 10px;
+           display: inline;
+           color: #000000;
+       }
+
+       .path-font{
+           font-weight: normal;
+           color:#006eff;
+       }
+
+       .table-head > th{
+           font-weight: normal;
+           font-size: 13px;
+           border-right: #fff 1px solid;
+           color:#888;
+       }
+
+       #rowList > tr  td ,#rowList > tr > td a{
+           font-weight: normal;
+           font-size: 12px;
+           color: #000;
+       }
+
+        .icon{
+              width: 1.2em;
+   height: 1.3em;
+   vertical-align: -0.15em;
+   fill: currentColor;
+   overflow: hidden;
+            margin-right: 1px;
+            font-weight: bold;
+       }
+        .modd-1 {
+            width: 100px;
+            height: 30px;
+            float: left;
+            border-radius: 0px;
+            text-align: center;
+            line-height: 30px;
+            background-color: #0c5df4;
+            color: #fff;
+            margin-right: 5px;
+        }
+        .function>.btn{
+            background-color: #0c5df4;
+            border-radius: 0px;
+            width: 100px;
+            height: 30px;
+            font-size:14px
+        }
+        .modd-1:hover,.function > .btn:hover,function > .btn:link,.modd-1:link{
+            background-color: #0c5df4;
+            color: #fff;
+        }
+
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="panel panel-default">
+      <!-- Default panel contents -->
+      <div class="panel-heading">
+          <div id="font-sze">
+              <a href="{% url "web:file_list" project_id=request.tracer.project.id %}">
+                  <i class="fa fa-home path-font" aria-hidden="true"></i><span class="path-font" style="margin-right: 15px">HOME</span></a>
+          {% for record in baeadcrumb_list %}
+              <a href="{% url "web:file_list" project_id=request.tracer.project.id %}?folder={{ record.id }}">
+                  <span class="path-font">{{ record.name }}</span><div class="separator">\</div>
+              </a>
+          {% endfor %}
+          </div>
+          <div>
+              <div class="function">
+                    <a class="upload btn btn-primary btn-xs file-button" style="position: relative;padding: 0px">
+                        <div class="modd-1">上传文件</div>
+                        <input type="file" multiple name="uploadFile" id="uploadFile" style="border: none;">
+                    </a>
+              <a class="modd-1" data-toggle="modal" data-target="#addModal" data-whatever="新建文件夹">新建文件夹</a>
+          </div>
+          </div>
+        </div>
+      <!-- Table -->
+      <table class="table">
+        <thead>
+          <tr class="table-head">
+            <th>文件/文件夹名称</th>
+              <th>类型</th>
+            <th>文件大小(字节)</th>
+              <th>创建者</th>
+            <th>创建更新时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="rowList">
+        {% for item in file_object %}
+          <tr>
+            {% if item.file_type == "1" %}
+                <td><svg t="1677652335319" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2754" width="200" height="200"><path d="M875.093333 301.781333L597.12 21.333333a77.44 77.44 0 0 0-14.805333-11.52 60.928 60.928 0 0 0-4.394667-2.261333c-0.938667-0.512-1.92-0.896-2.816-1.28A72.362667 72.362667 0 0 0 546.005333 0h-346.026666C160.256 0 128 32.213333 128 72.021333v880C128 991.744 160.213333 1024 200.021333 1024h624c39.765333 0 71.978667-32.213333 71.978667-72.021333V352.512c0-19.029333-7.509333-37.205333-20.906667-50.730667z m-91.306666 10.24h-199.808V110.421333l199.808 201.557334z m40.192 640H200.021333V72.021333H512v240C512 351.786667 544.213333 384 584.021333 384h239.957334v568.021333z" fill="#000000" opacity=".65" p-id="2755"></path></svg>{{ item.name }}</td>
+                <td>文件</td>
+            {% else %}
+                    <td><a href="{% url "web:file_list" project_id=request.tracer.project.id %}?folder={{ item.id }}" style="color: #0f0f0f"><svg t="1677653158465" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2611" width="200" height="200"><path d="M959.957333 414.037333V290.517333c0-40.832-32.213333-73.856-71.978666-73.856H488.96l-25.002667-79.914666A72.064 72.064 0 0 0 395.392 85.333333h-323.413333C32.213333 85.333333 0 118.357333 0 159.189333v706.133334a75.477333 75.477333 0 0 0 0.896 11.093333l0.512 3.072 0.170667 0.810667 0.64 2.56 0.384 1.536 0.298666 1.237333c0.298667 1.109333 0.597333 2.133333 0.981334 3.157333v0.128c3.712 11.093333 9.898667 20.906667 18.005333 28.928l0.213333 0.213334 2.304 2.133333a11.093333 11.093333 0 0 1 1.109334 1.024l1.066666 0.938667 2.005334 1.621333 0.597333 0.426667 2.517333 1.834666c0.085333 0 0.085333 0.128 0.213334 0.128a69.674667 69.674667 0 0 0 32.981333 12.202667c1.109333 0.085333 2.133333 0.213333 3.2 0.213333h0.597333l3.285334 0.085334h787.968a72.533333 72.533333 0 0 0 69.930666-55.893334l91.989334-377.557333c10.581333-43.690667-19.328-86.357333-61.909334-91.178667zM71.978667 159.146667h323.2l41.216 131.328h451.584v123.093333H164.010667a72.533333 72.533333 0 0 0-69.930667 55.893333l-22.101333 91.136V159.146667z m787.968 705.834666H71.978667l92.032-377.557333H951.893333l-91.989333 377.557333z" fill="#000000" opacity=".65" p-id="2612"></path></svg>{{ item.name }}</a></td>
+                    <td>文件夹</td>
+            {% endif %}
+
+
+
+             {% if item.file_size %}
+            <td>{{ item.file_size }}</td>
+              {% else %}
+                 <td>---</td>
+              {% endif %}
+            <td>{{ item.update_user.username }}</td>
+            <td>{{ item.update_datetime }}</td>
+            <td>
+                {% if item.file_type == "2" %}
+                      <a class=" modd" data-toggle="modal" data-target="#addModal"
+                                   data-name="{{ item.name }}"
+                                   data-fid="{{ item.id }}" data-whatever="修改文件夹">
+                          <svg t="1677653111397" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2611" width="200" height="200"><path d="M923.989333 888.021333H100.010667a35.968 35.968 0 1 0 0 71.978667h823.978666a35.968 35.968 0 1 0 0-72.021333zM296.021333 770.005333l235.477334-99.712a33.109333 33.109333 0 0 0 10.24-6.826666l397.141333-397.184a72.234667 72.234667 0 0 0 0.213333-101.973334l-79.274666-79.317333a72.234667 72.234667 0 0 0-102.016 0.213333l-397.226667 397.226667a32 32 0 0 0-6.784 10.154667l-99.797333 235.434666a31.658667 31.658667 0 0 0 6.826666 35.072 31.573333 31.573333 0 0 0 35.157334 6.912zM808.661333 136.106667l0.213334-0.213334 79.189333 79.189334-0.213333 0.213333L825.898667 277.333333l-79.189334-79.189333 61.994667-61.994667z m-391.68 391.68l278.784-278.784 79.189334 79.189333-278.784 278.826667-137.386667 58.197333 58.154667-137.386667z" fill="#000000" opacity=".65" p-id="2612"></path></svg></a>&nbsp;
+                {% else %}
+                                    <a href="{% url "web:file_download"  project_id=request.tracer.project.id file_id=item.id %}">
+<svg t="1677652783055" class="icon" style="   width: 1.5em;
+   height: 1.5em;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2611" width="200" height="200"><path d="M926.293333 484.608v-0.128l-1.28-1.962667a243.157333 243.157333 0 0 0-64.896-66.133333 252.928 252.928 0 0 0-19.626666-82.474667 265.6 265.6 0 0 0-59.776-86.016 270.336 270.336 0 0 0-87.594667-57.813333 272.981333 272.981333 0 0 0-103.424-19.370667 267.349333 267.349333 0 0 0-151.296 45.397334 274.346667 274.346667 0 0 0-65.28 60.672 174.421333 174.421333 0 0 0-42.624-5.162667c-22.314667 0-43.690667 3.968-63.488 11.946667-19.797333 8.021333-37.973333 20.053333-54.101333 35.541333a162.645333 162.645333 0 0 0-36.821334 53.333333 161.92 161.92 0 0 0-12.672 63.573334c0 6.186667 0.298667 12.288 0.981334 18.304a216.661333 216.661333 0 0 0-56.106667 48.682666 206.506667 206.506667 0 0 0-48.682667 134.997334c0 29.44 5.589333 57.301333 16.512 83.114666a211.882667 211.882667 0 0 0 48.384 69.589334c21.205333 20.48 45.013333 36.181333 70.698667 46.592 25.813333 10.496 53.888 15.786667 83.498667 15.786666h440.618666a248.32 248.32 0 0 0 93.397334-17.578666 246.528 246.528 0 0 0 79.189333-52.309334c23.594667-22.997333 41.813333-49.194667 54.016-77.781333a236.16 236.16 0 0 0 18.346667-92.586667 230.229333 230.229333 0 0 0-37.973334-128.213333zM141.994667 692.992a138.581333 138.581333 0 0 1-10.794667-54.912c0-16.768 2.688-32.768 7.978667-47.488 5.333333-14.677333 13.44-28.586667 24.021333-41.472l0.426667-0.512c11.690667-14.293333 25.472-26.026667 40.789333-34.688l37.888-21.504-6.485333-43.221333a82.858667 82.858667 0 0 1-0.938667-13.226667c0-12.672 2.432-24.661333 7.04-35.754667l0.469333-1.408c4.522667-10.24 11.306667-19.797333 20.309334-28.501333 9.216-9.002667 19.626667-15.914667 30.890666-20.48a99.84 99.84 0 0 1 36.821334-6.826667c9.898667 0 19.285333 1.28 27.776 3.84l42.794666 12.544 26.453334-35.882666c13.568-18.517333 30.677333-34.56 50.645333-48a197.248 197.248 0 0 1 111.402667-33.109334c27.733333 0 53.504 4.821333 76.714666 14.293334 23.466667 9.514667 45.226667 23.808 64.426667 42.624 19.370667 18.986667 34.090667 40.106667 43.861333 62.890666 8.106667 18.901333 12.928 39.893333 14.208 62.421334l1.792 31.872 26.624 17.621333c17.578667 11.605333 32.853333 26.581333 45.610667 44.586667l2.474667 3.712c9.216 13.781333 16.085333 28.373333 20.608 43.306666 4.608 15.104 6.912 31.104 6.912 47.488 0 22.912-4.309333 44.586667-12.714667 64.597334-8.405333 19.712-21.205333 37.973333-38.186667 54.485333-16.896 16.512-35.712 29.013333-56.106666 37.205333-20.48 8.192-42.922667 12.373333-66.602667 12.373334H278.784a150.186667 150.186667 0 0 1-56.704-10.581334 148.522667 148.522667 0 0 1-47.701333-31.573333 144.426667 144.426667 0 0 1-31.786667-44.8v-0.128l-0.597333-1.792z m324.608-151.978667c9.514667 0 18.517333 3.669333 25.301333 10.496l68.608 68.48V373.589333a35.84 35.84 0 1 1 71.594667 0.128v246.272l68.48-68.48a35.413333 35.413333 0 0 1 25.301333-10.496 35.712 35.712 0 0 1 25.301333 61.098667l-129.706666 129.578667a35.541333 35.541333 0 0 1-50.602667 0l-129.578667-129.578667a35.712 35.712 0 0 1 25.301334-61.098667z" fill="#000000" opacity=".65" p-id="2612"></path></svg>                </a>
+                {% endif %}
+
+                <a class="{{ item.file_type }}" data-toggle="modal"  data-fid="{{ item.id }}"  data-target="#delModal"><svg t="1677653032821" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2611" width="200" height="200"><path d="M179.072 949.930667a48.256 48.256 0 0 1-4.266667-4.266667c1.536 1.578667 2.816 3.114667 4.266667 4.266667z m-9.557333-5.461334zM950.4 204.586667a37.76 37.76 0 0 0-26.282667-10.581334h-184.362666V136.533333c0-38.826667-31.573333-70.4-70.4-70.4H354.56c-38.826667 0-70.4 31.573333-70.4 70.4v57.472H98.901333a35.797333 35.797333 0 0 0 0 71.509334h31.573334v622.336c0 38.869333 31.573333 70.4 70.4 70.4h632.234666c38.826667 0 70.4-31.530667 70.4-70.4V265.514667h20.608c19.626667 0 36.736-16 36.736-35.754667a35.2 35.2 0 0 0-10.453333-25.173333zM354.474667 136.746667h314.538666v57.856H354.474667V136.746667z m478.549333 751.018666H200.874667V265.514667h632.106666v622.250666h0.042667zM511.488 385.365333a35.925333 35.925333 0 0 0-35.925333 35.925334v333.653333a35.925333 35.925333 0 1 0 71.893333 0v-333.653333a35.925333 35.925333 0 0 0-35.968-35.925334z m-194.730667 0a35.925333 35.925333 0 0 0-35.968 35.925334v333.653333a35.925333 35.925333 0 1 0 71.893334 0v-333.653333a35.968 35.968 0 0 0-35.925334-35.925334z m387.541334 0a35.925333 35.925333 0 0 0-35.968 35.925334v333.653333a35.925333 35.925333 0 1 0 71.893333 0v-333.653333a35.925333 35.925333 0 0 0-35.925333-35.925334z" fill="#000000" opacity=".65" p-id="2612"></path></svg></a>
+            </td>
+
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!--add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+        <form id="form">
+        {% csrf_token %}
+        <input checked="hide" name="fid" id="fid" type="hidden">
+  <div class="form-group">
+      {% for field in form  %}
+           <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            <span class="error-msg"></span>
+      {% endfor %}
+
+          </div>
+               <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button id="btnFormSubmit"  type="button" class="btn btn-primary">保存</button>
+      </div>
+            </form>
+  </div>
+</form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="margin: 100px auto" >
+  <div class="modal-dialog" role="document">
+      <div class="alert alert-danger alert-dismissible fade in" role="alert" style="border-radius:6px;overflow: hidden">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+      <h4>确定要删除吗!</h4>
+      <p>注意！！！删除采取递归方式，当前文件夹下所有文件或文件夹均会被删除.</p>
+      <p style="float: right;">
+        <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close">取消</button>
+        <button id="delBtn" type="button" class="btn btn-default">确定</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+    <div id="uploadProgress" class="upload-progress hide">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <i class="fa fa-cloud-upload" aria-hidden="true"></i> 上传进度
+            </div>
+
+            <table class="table">
+                <tbody id="progressList">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="hide">
+        <table id="progressTemplate">
+            <tr>
+                <td>
+                    <div class="name"></div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar"
+                             aria-valuenow="0"
+                             aria-valuemin="0"
+                             aria-valuemax="100" style="width: 0%;">
+                            0%
+                        </div>
+                    </div>
+                    <div class="progress-error"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="hide">
+        <table id="rowTpl">
+            <tr>
+                <td>
+                    <i class="fa fa-file" aria-hidden="true"></i>
+                    <span class="name"></span>
+                </td>
+                <td class="file_type"></td>
+                <td class="file_size"></td>
+                <td class="username"></td>
+                <td class="datetime"></td>
+                <td>
+
+                    <a class="download">
+                        <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                    </a>
+
+                    <a  data-toggle="modal" data-target="#alertModal">
+                        <i class="fa fa-window-close-o" aria-hidden="true"></i>
+                    </a>
+                </td>
+            </tr>
+        </table>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static "js/cos-js-sdk-v5.min.js" %}"></script>
+    <script>
+    var FOLDER_URL = "{% url "web:file_list" project_id=request.tracer.project.id %}"
+    var DELETE_URL = "{% url "web:file_del" project_id=request.tracer.project.id %}"
+    var COS_CREDENTIAL = "{% url "web:cos_credential" project_id=request.tracer.project.id %}"
+    var CURRENT_FOLDER_ID = "{{ folder_object.id }}";
+    var FILE_POST = "{% url "web:file_post" project_id=request.tracer.project.id %}"
+
+    var modal = $(this);
+    modal.find('.error-msg').empty();
+
+    $(function (){
+         bindModelSubmit();
+         initAddModal();
+         btnDeleteSubmit();
+         bindUploadFile();
+     })
+
+    $('.modd').on("click",function (){$('.error-msg').empty();$('#form')[0].reset();})
+
+
+    function initAddModal() {
+        $('#addModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var recipient = button.data('whatever');
+            var name = button.data('name');
+            var fid = button.data('fid');
+            var modal = $(this);
+            modal.find('.modal-title').text(recipient);
+
+            if (fid) {
+
+                modal.find('#id_name').val(name);
+                modal.find('#fid').val(fid);
+            } else {
+
+                modal.find('.error-msg').empty();
+                $('#form')[0].reset();
+        }
+    });
+
+    $('#delModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var fid = button.data('fid');
+        $('#delBtn').attr('fid', fid);
+
+    })
+}
+    function btnDeleteSubmit(){
+        $('#delBtn').click(function (){
+            $.ajax({
+                url: DELETE_URL,
+                type: "GET",
+                data: {fid:$(this).attr('fid')},
+                success: function (res){
+                    if(res.status) {
+                        location.href = location.href
+                    }
+                }
+
+            })
+        })
+    }
+    function bindModelSubmit() {
+
+            $('#btnFormSubmit').click(function () {
+                $.ajax({
+                    url: location.href,
+                    type: "POST",
+                    data: $("#form").serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            location.href = location.href;
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    function bindUploadFile() {
+            $('#uploadFile').change(function () {
+                $('#progressList').empty();
+
+                var fileList = $(this)[0].files;
+                // 获取本次要上传的每个文件 名称&大小
+                var checkFileList = [];
+                $.each(fileList, function (index, fileObject) {
+                    checkFileList.push({'name': fileObject.name, 'size': fileObject.size})
+                });
+
+                // 把这些数据发送到django后台：Django后台进行容量的校验，如果么有问题则返回临时凭证；否则返回错误信息；
+                var cos_credential = new COS({
+                    getAuthorization: function (options, callback) {
+                        $.post(COS_CREDENTIAL, JSON.stringify(checkFileList), function (res) {
+                            if (res.status) {
+                                var credentials = res.data && res.data.credentials;
+                                callback({
+                                    TmpSecretId: credentials.tmpSecretId,
+                                    TmpSecretKey: credentials.tmpSecretKey,
+                                    XCosSecurityToken: credentials.sessionToken,
+                                    StartTime: res.data.startTime,
+                                    ExpiredTime: res.data.expiredTime
+                                });
+
+                                $('#uploadProgress').removeClass('hide');
+                            } else {
+                                alert(res.error);
+                            }
+                        });
+                    }
+                });
+
+                // 上传文件（上传之前先获取临时凭证
+                $.each(fileList, function (index, fileObject) {
+                    var fileName = fileObject.name;
+                    var fileSize = fileObject.size;
+                    var key = (new Date()).getTime() + "_" + fileName;
+
+                    var tr = $('#progressTemplate').find('tr').clone();
+                    tr.find('.name').text(fileName);
+                    $('#progressList').append(tr);
+
+                    // 上传文件（异步）
+                    cos_credential.putObject({
+                        Bucket: '{{ request.tracer.project.bulcket }}', /* 必须 */
+                        Region: '{{ request.tracer.project.region }}', /* 存储桶所在地域，必须字段 */
+                        Key: key, /* 必须 */
+                        Body: fileObject, // 上传文件对象
+                        onProgress: function (progressData) {
+                            var percent = progressData.percent * 100 + '%';
+                            tr.find('.progress-bar').text(percent);
+                            tr.find('.progress-bar').css('width', percent);
+                        }
+                    }, function (err, data) {
+                        if (data && data.statusCode === 200) {
+                            // 上传成功，将本次上传的文件提交到后台并写入数据
+                            // 当前文件上传成功
+                            $.post(FILE_POST, {
+                                name: fileName,
+                                key: key,
+                                file_size: fileSize,
+                                parent: CURRENT_FOLDER_ID,
+                                etag: data.ETag,
+                                file_path: data.Location
+                            }, function (res) {
+                                // 在数据库中写入成功，将已添加的数据在页面上动态展示。
+                                var newTr = $('#rowTpl').find('tr').clone();
+                                newTr.find('.name').text(res.data.name);
+                                newTr.find('.file_type').text(res.data.file_type);
+                                newTr.find('.file_size').text(res.data.file_size);
+                                newTr.find('.username').text(res.data.username);
+                                newTr.find('.datetime').text(res.data.datetime);
+                                newTr.find('.delete').attr('data-fid', res.data.id);
+                                newTr.find('.download').attr('href', res.data.download_url);
+                                $('#rowList').append(newTr);
+
+                                // 自己的进度删除
+                                $('.panel-primary').attr("style","display:none")
+                                tr.remove();
+                            })
+
+                        } else {
+                            tr.find('.progress-error').text('上传失败');
+                        }
+                    });
+
+
+                })
+            });
+        }
+
+
+
+    </script>
+{% endblock %}

@@ -1,0 +1,74 @@
+.navbar-default {
+    border-radius: 0px;
+    background: #262f3e;
+    border: #262f3e;
+    padding-left: 3px;
+}
+
+.navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover{
+    background: #262f3e;
+    border-radius: 6px;
+    color: #fff;
+}
+
+ .btn {
+     background-color: #006eff;
+     color: #fff;
+}
+
+.btn-default  {
+     color: #fff;
+ }
+
+ .btn:hover{
+     background-color: #1E90FF;
+ }
+
+ .navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.open>a:focus, .navbar-default .navbar-nav>.open>a:before{
+     background-color: #262f3e;
+     border-radius: 5px;
+ }
+
+.dropdown-menu{
+    background: #DCDCDC;
+}
+
+.col-size{
+    color: #c1c6c8!important;
+    font-size: 14px!important;
+}
+
+.col-size:hover{
+    color: #1E90FF!important;
+}
+
+.navbar-brand{
+    color: #DCDCDC!important;
+    margin-right: 30px!important;
+}
+
+
+.onl{
+    background: #2E3f5e!important;
+    border-radius: 0px;
+    margin: 3px!important;;
+}
+
+@media (min-width: 768px){
+.navbar-right .dropdown-menu {
+    right: auto;
+    left: auto;
+}}
+
+.modal-content {
+    top: 100px!important;
+}
+
+.project-icon {
+    margin: 10px;
+}
+
+.navbar{
+    margin-bottom: 0px!important;
+}
+

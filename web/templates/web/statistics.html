@@ -1,0 +1,270 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'plugin/daterangepicker/daterangepicker.css' %}">
+    <style>
+    .col-md-8,.col-md-4{
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .conti{
+        padding:15px 30px 20px 30px;
+    }
+
+    .panel-default>.panel-heading {
+        background-color: #fff;!important;
+    }
+
+    .panel-default{
+        border: 0px;
+    }
+
+    .panel{
+        box-shadow: 6px 8px 5px #e5e5e7;
+    }
+
+    .status-count {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            font-size: 14px;
+
+
+        }
+
+    .flex-1{
+                  display: flex;
+        justify-content: space-between;
+  flex-direction: row;
+    }
+
+        .status-count .count {
+            font-size: 25px;
+        }
+
+        .status-count a {
+            text-decoration: none;
+        }
+
+
+    </style>
+
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid" style="margin-top: 20px;">
+      <h3 style="font-weight: bold">问题处理统计</h3>
+       <div class="panel panel-default">
+                            <div class="panel-body flex-1">
+                                {% for key,item in status_dict.items %}
+                                    <div class="status-count">
+                                        <a href="{% url 'web:issues' project_id=request.tracer.project.id %}?status={{ key }}">
+                                            <div class="count">{{ item.count }}</div>
+                                            <div>{{ item.text }}</div>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+       </div>
+    </div>
+    <div class="conti">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="panel panel-default col">
+                    <div class="panel-heading" style="width: 41px;position: relative;border: 0px" >
+                               <div style="position: absolute;top: 7%;left: 0px">
+            <div class="input-group" style="width: 300px">
+                <span class="input-group-addon">日期范围</span>
+                <input id="rangePicker" type="text" class="form-control" >
+            </div>
+        </div>
+                    </div>
+
+                    <div class="panel-body">
+                        <div id="projectUser" style="height: 300px;"></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="border: 0px">
+                    </div>
+                    <div class="panel-body">
+                        <div id="priority" style="height: 300px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'plugin/daterangepicker/moment.min.js' %}"></script>
+    <script src="{% static 'plugin/daterangepicker/daterangepicker.js' %}"></script>
+    <script src="{% static 'plugin/highcharts/highcharts.js' %}"></script>
+
+<script>
+        var PRIORITY_API = "{% url 'web:statistics_priority' project_id=request.tracer.project.id %}";
+        var PROJECT_USER_API = "{% url 'web:statistics_project_user' project_id=request.tracer.project.id %}";
+        $(function () {
+            initDateRangePicker();
+
+            priority(moment().subtract(29, 'days').format('YYYY-MM-DD'), moment().add(1, 'days').format('YYYY-MM-DD'));
+            projectUser(moment().subtract(29, 'days').format('YYYY-MM-DD'), moment().add(1, 'days').format('YYYY-MM-DD'));
+        });
+
+        function initDateRangePicker() {
+            var options = {
+                startDate: moment().subtract(29, 'days'),
+                maxDate: moment(),
+                alwaysShowCalendars: true,
+                showWeekNumbers: true,
+                ranges: {
+                    '今天': [moment(), moment()],
+                    '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    '最近7天': [moment().subtract(6, 'days'), moment()],
+                    '最近30天': [moment().subtract(29, 'days'), moment()],
+                    '本月': [moment().startOf('month'), moment().endOf('month')]
+                },
+                locale: {
+                    format: 'YYYY-MM-DD',
+                    separator: ' 至 ',
+                    applyLabel: '确定',
+                    cancelLabel: '取消',
+                    fromLabel: '开始',
+                    toLabel: '结束',
+                    customRangeLabel: '自定义',
+                    weekLabel: 'W',
+                    daysOfWeek: ['一', '二', '三', '四', '五', '六', '日'],
+                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                    firstDay: 1
+                }
+            };
+
+            $('#rangePicker').daterangepicker(options, function (start, end, label) {
+                // 选择了时间之后，函数自动被触发。
+                priority(start.format('YYYY-MM-DD'), end.add(1, 'days').format('YYYY-MM-DD'))
+                projectUser(start.format('YYYY-MM-DD'), end.add(1, 'days').format('YYYY-MM-DD'))
+            });
+        }
+
+        function priority(start, end) {
+            var config = {
+                chart: {
+                    type: 'pie'
+                },
+                title: {
+                    text: null
+                },
+                credits: {
+                    enabled: false // 关闭版权信息
+                },
+                tooltip: {
+                    pointFormat: '{series.name}: <b>{point.y}</b>'
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: false
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    name: '优先级',
+                    colorByPoint: true,
+                    data: []
+                }]
+            };
+            $.ajax({
+                url: PRIORITY_API,
+                type: "GET",
+                data: {start: start, end: end},
+                dataType: "JSON",
+                success: function (res) {
+                    config.series[0].data = res.data;
+                    Highcharts.chart('priority', config);
+
+                }
+            })
+        }
+
+        function projectUser(start, end) {
+            var config = {
+                chart: {
+                    type: 'column'
+                },
+                title: {
+                    text: null
+                },
+                credits: {
+                    enabled: false // 关闭版权信息
+                },
+                xAxis: {
+                    categories: ['武沛齐', '万光', '很熟哦']
+                },
+
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: '问题数量'
+                    },
+                    stackLabels: {  // 堆叠数据标签
+                        enabled: true,
+                        style: {
+                            fontWeight: 'bold',
+                            color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                        }
+                    }
+                },
+                legend: {
+                    align: 'center',
+                    verticalAlign: 'top'
+
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.x + '</b><br/>' +
+                            this.series.name + ': ' + this.y + '<br/>' +
+                            '总量: ' + this.point.stackTotal;
+                    }
+                },
+                plotOptions: {
+                    column: {
+                        stacking: 'normal',
+                        dataLabels: {
+                            enabled: false
+                        }
+                    }
+                },
+                series: [{
+                    name: '新建',
+                    data: [5, 3, 4]
+                }, {
+                    name: '处理中',
+                    data: [2, 2, 3]
+                }, {
+                    name: '啊啊',
+                    data: [3, 4, 4]
+                }]
+            };
+            $.ajax({
+                url: PROJECT_USER_API,
+                type: "GET",
+                data: {start: start, end: end},
+                dataType: "JSON",
+                success: function (res) {
+                    config.xAxis.categories = res.data.categories;
+                    config.series = res.data.series;
+                    Highcharts.chart('projectUser', config);
+
+                }
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "layout/manage.html" %}
+{% load static %}
+
+{% block css %}
+ <link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.min.css' %}"/>
+    <style>
+    .panel-default{
+        margin: 0;
+    }
+
+
+
+    .panel-title{
+        text-align: center;
+    }
+
+    .panel-body{
+        min-height: 100%;
+
+    }
+    .panel{
+        margin: 0px 15px;
+    }
+
+    .list-group{
+        max-width: 200px;
+        margin: 0px;
+        position: relative;
+        left: -202px;
+    }
+
+    #cata span{
+        position: absolute;
+        width: 40px;
+        height: 60px;
+        background-color: #1E90FF;
+        right: -40px;
+        text-align: center;
+        writing-mode: vertical-lr;
+        color: #fff;
+        top: 35%;
+        padding-left: 10px;
+        background-image: url("https://csdnimg.cn/release/blogv2/dist/pc/img/iconShowDirectory.png");
+        background-size: 100px;
+    }
+
+    #content-form{
+        margin: 0px 10px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+
+<div class="panel panel-default" style="height: 80%">
+  <div class="panel-heading" style="position: relative">
+    <h3 class="panel-title">{{ request.tracer.project.name }}项目的wiki文档库</h3>
+  </div>
+  <div class="panel-body">
+      <form method="POST" id="content-form">
+      {% csrf_token %}
+          {% for field in form %}
+              {% if field.name == "content" %}
+                  <div class="form-group">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                      <div id="editor">
+    {{ field }}
+                          </div>
+    <span class="error-msg"></span>
+  </div>
+                  {% else %}
+  <div class="form-group">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    <span class="error-msg"></span>
+  </div>
+              {% endif %}
+          {% endfor %}
+  <button type="submit" class="btn btn-default">提交</button>
+</form>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{% static "plugin/editor-md/editormd.min.js" %}"></script>
+<script type="text/javascript">
+    var WIKI_UOLOAD_URL = "{% url "web:wiki_upload" project_id=request.tracer.project.id %}"
+
+    $(function (){
+        initEditorMd()
+    })
+        function initEditorMd() {
+            editormd('editor', {
+                placeholder: "请输入内容",
+                height: 500,
+                path: "{% static 'plugin/editor-md/lib/' %}",
+                imageUpload: true,
+                imageFormats: ["jpg", "jpeg", "png", "gif"],
+                imageUploadURL: WIKI_UOLOAD_URL,
+            });
+        }
+</script>
+{% endblock %}
